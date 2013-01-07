@@ -6,6 +6,7 @@
 
 $fake_register_globals=false;
 $sanitize_all_escapes=true;
+$injuryForms = true;             //*** should be a Global
 
 require_once("../globals.php");
 require_once("../../library/acl.inc");
@@ -18,6 +19,7 @@ require_once(dirname(__FILE__) . "/../../library/classes/X12Partner.class.php");
 require_once("$srcdir/formatting.inc.php");
 require_once("$srcdir/options.inc.php");
 require_once("adjustment_reason_codes.php");
+require_once("$srcdir/gen_accident_form.inc.php");
 
 $EXPORT_INC = "$webserver_root/custom/BillingExport.php";
 
@@ -515,20 +517,43 @@ if(!isset($_REQUEST['mode']))//default case
 <input type="submit" class="subbtn" name="bn_ub92_print" value="Queue UB92 &amp; Print" title="<?php echo xla('Queue for UB-92 batch processing and printing')?>">
 <input type="submit" class="subbtn" name="bn_ub92" value="Queue UB92" title="<?php echo xla('Queue for UB-92 batch processing')?>">
 -->
-<input type="submit" class="subbtn" name="bn_x12" value="<?php echo xla('Generate X12')?>"
- title="<?php echo xla('Generate and download X12 batch')?>"
- onclick="MarkAsCleared(1)">
-<?php if ($GLOBALS['support_encounter_claims']) { ?>
+<?php if ($injuryForms) {  ?>
+<table width='15%' border="0" cellspacing="0" cellpadding="0" >
+    <tr><td>
+<input type="submit" class="subbtn" name="bn_nf_initial" value="<?php echo xla('NF Initial')?>"
+ title="<?php echo xla('Generate NF Initial Form')?>"
+ onclick="MarkAsCleared(3)">
+        </td>
+        <td>
+<input type="submit" class="subbtn" name="bn_nf_followup" value="<?php echo xla('NF Followup')?>"
+ title="<?php echo xla('Generate NF Followup Form')?>"
+ onclick="MarkAsCleared(3)">
+        </td>
+        <td>
+<input type="submit" class="subbtn" name="bn_wc_followup" value="<?php echo xla('Work. Comp')?>"
+ title="<?php echo xla('Generate WC Followup Form')?>"
+ onclick="MarkAsCleared(2)">
+        </td>
+        <td>
+<input type="submit" class="subbtn" name="bn_therapy_notes" value="<?php echo xla('Therapy Notes')?>"
+ title="<?php echo xla('Print Therapy Notes')?>"
+ onclick="MarkAsCleared(2)">
+        </td>
+    </tr>
+</table>
+<?php }  ?>
+
+<!--   <?php if ($GLOBALS['support_encounter_claims']) { ?>
 <input type="submit" class="subbtn" name="bn_x12_encounter" value="<?php echo xla('Generate X12 Encounter')?>"
  title="<?php echo xla('Generate and download X12 encounter claim batch')?>"
  onclick="MarkAsCleared(1)">
-<?php } ?>
+<?php } ?> -->
 <input type="submit" class="subbtn" style="width:175px;" name="bn_process_hcfa" value="<?php echo xla('Generate CMS 1500 PDF')?>"
  title="<?php echo xla('Generate and download CMS 1500 paper claims')?>"
  onclick="MarkAsCleared(2)">
-<input type="submit" class="subbtn" style="width:175px;" name="bn_hcfa_txt_file" value="<?php echo xla('Generate CMS 1500 TEXT')?>"
+<!-- <input type="submit" class="subbtn" style="width:175px;" name="bn_hcfa_txt_file" value="<?php echo xla('Generate CMS 1500 TEXT')?>"
  title="<?php echo xla('Making batch text files for uploading to Clearing House and will mark as billed')?>"
- onclick="MarkAsCleared(3)">
+ onclick="MarkAsCleared(3)"> -->
 <input type="submit" class="subbtn" name="bn_mark" value="<?php echo xla('Mark as Cleared')?>" title="<?php echo xla('Post to accounting and mark as billed')?>">
 <input type="submit" class="subbtn" name="bn_reopen" value="<?php echo xla('Re-Open')?>" title="<?php echo xla('Mark as not billed')?>">
 <!--
