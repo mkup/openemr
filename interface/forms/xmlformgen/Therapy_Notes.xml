@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<form>
+    <table type="form">form_therapy_notes</table>
+    <RealName>Physical Therapy Notes</RealName>
+    <safename>therapy_notes</safename>
+    <style cells_per_row="4">layout</style>
+    <acl table="patients">med</acl>
+    <manual>
+        <section name="form" label="Notes ">
+            <field name="diagnosis" label="Diagnosis" type="checkbox_list" list="TH_diagnosis" hoverover="Diagnosis" size="40" maxlength="40" labelcols="1" cols="1"/>
+            <field name="diag_text" label="Describe" type="textarea" rows="4" columns="80" hoverover="Describe" labelcols="1" cols="1"/>
+            <field name="subjective" label="Subjective" type="textarea" rows="4" columns="80" hoverover="Describe" labelcols="1" cols="3"/>
+            <field name="objective" label="Objective" type="checkbox_list" list="TH_objective" hoverover="Objective" size="30" maxlength="30" labelcols="1" cols="1"/>
+            <field name="obj_text" label="Describe" type="textarea" rows="4" columns="80" hoverover="Describe" labelcols="1" cols="1"/>
+            <field name="assessment" label="Assessment" type="textarea" rows="4" columns="80" hoverover="Assessment" labelcols="1" cols="3"/>
+            <field name="plan" label="Plan" type="textarea" rows="4" columns="80" hoverover="Plan" labelcols="1" cols="3"/>
+            <field name="provider" label="Provider" type="provider" hoverover="Physical Therapist" labelcols="1" cols="1"/>        </section>
+    </manual>
+    <list name="TH_diagnosis" label="Therapy Diagnosis" type="standard" id="TH_diagnosis" import="no"/>
+    <list name="TH_objective" label="Therapy Objective" type="standard" id="TH_objective" import="no"/>    
+</form>

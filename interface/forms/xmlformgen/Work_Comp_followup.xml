@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<form>
+    <table type="form">form_workcomp_followup</table>
+    <RealName>Work-comp follow-up visit</RealName>
+    <safename>workcomp_followup</safename>
+    <style cells_per_row="4">layout</style>
+    <acl table="patients">med</acl>
+    <manual>
+        <section name="WCB" label="WCB Info ">
+            <field name="date_accident" label="Injury Date" type="date" hoverover="Injury date" labelcols="1" cols="1"/>
+            <field name="description" label="Injury Description" type="textarea" rows="4" columns="50" hoverover="Describe the accident and injuries" labelcols="1" cols="1"/>
+            <field name="WCBCase" label="WCB Case Number" type="textfield" hoverover="WCB Case Number (if known)" size="30" maxlength="30" labelcols="1" cols="1"/>
+            <field name="claim_number" label="Carrier Case number" type="textfield" hoverover="Insurance Claim Number" size="30" maxlength="30" labelcols="1" cols="1"/>
+            <field name="WCBRating" label="Doctor WCB Rating Code" type="textfield" hoverover="Doctor WCB Rating Code" size="30" maxlength="30" labelcols="1" cols="1"/>
+            <field name="insurance_W_code" label="Carrier W number" type="textfield" hoverover="Insurance W code number (omit leading W)" size="30" maxlength="30" labelcols="1" cols="1"/>
+        </section>
+        <section name="Examination" label="D. Examination and Treatment ">
+            <field name="visit_tests" label="Diagnostic test(s) rendered at this visit" type="textarea" rows="4" columns="40" hoverover="Describe any diagnostic test(s) rendered at this visit" labelcols="1" cols="1"/>
+            <field name="exam_changes" label="Changes revealed by Exam" type="textarea" rows="4" columns="40" 
+                hoverover="List any changes revealed by your most recent examination in the following: area of injury, type/nature of injury, patient subjective complaints or your objective findings" 
+                labelcols="1" cols="1"/>
+            <field name="additioanl_body_parts" label="List additional body parts affected by this injury" type="textarea" rows="4" columns="40" hoverover="List additional body parts affected by this injury, if any" labelcols="1" cols="1"/>
+            <field name="plan_changes" label="List changes to the original plan" type="textarea" rows="4" columns="40" 
+                hoverover="Based on your most recent examination, list changes to the original treatment plan, prescription medications or assistive devices, if any" 
+                labelcols="1" cols="1"/>
+            <field name="need_test_refs" label="Needs diagnostic tests or referrals?" type="dropdown_list" list="YN" hoverover="Does the patient need diagnostic tests or referrals?" size="5" maxlength="5" 
+              labelcols="1" cols="3"/>
+            <field name="test_options" label="Tests" type="checkbox_list" list="C4Tests" hoverover="If yes, check all that apply" size="12" maxlength="12" labelcols="1" cols="1"/>
+            <field name="ref_options" label="Referrals" type="checkbox_list" list="C4Refs" hoverover="If yes, check all that apply" size="12" maxlength="12" labelcols="1" cols="1"/>
+            <field name="next_appointment" label="When is the next visit?" type="dropdown_list" list="C4NextVisit" hoverover="When is patient next follow-up visit?" size="12" maxlength="12" labelcols="1" cols="1"/> 
+            <field name="visit_treatments" label="Describe treatment rendered today" type="textarea" rows="4" columns="40" hoverover="Describe treatment rendered today" labelcols="1" cols="1"/>
+        </section>
+        <section name="Opinion" label="E. Doctor Opinion (based on this examination) ">
+            <field name="condition_caused" label="Was the incident the competent medical cause of this injury" type="dropdown_list" list="YN" hoverover="In your opinion, was the incident that the patient described the competent medical cause of this injury/illness?" size="5" maxlength="5" 
+              labelcols="1" cols="1"/>
+            <field name="condition_complaints" label="Are the complaints consistent with the history of the injury?" type="dropdown_list" list="YN" hoverover="Are the patient complaints consistent with his/her history of the injury/illness?" size="5" maxlength="5" 
+              labelcols="1" cols="1"/>
+            <field name="condition_history" label="Is the history of the injury consistent with your objective findings?" type="dropdown_list" list="yesnona" hoverover="Is the patient history of the injury/illness consistent with your objective findings?" size="5" maxlength="5" 
+              labelcols="1" cols="1"/>
+            <field name="percent_impaired" label="Percent of impairement" type="textfield" hoverover="What is the percentage (0-100%) of temporary impairment?" size="5" maxlength="5" labelcols="1" cols="1"/>
+            <field name="findings_text" label="Describe findings and results" type="textarea" rows="6" columns="80" hoverover="Describe findings and relevant diagnostic test results" labelcols="1" cols="3"/>         
+        </section>
+        <section name="Work" label="F. Return to Work ">
+            <field name="work_status" label="Is patient working now" type="dropdown_list" list="YN" hoverover="Is patient working now?" size="5" maxlength="5" labelcols="1" cols="3"/> 
+            <field name="work_restrictions" label="Are there work restrictions" type="dropdown_list" list="NoY" hoverover="Are there work restrictions?" size="5" maxlength="5" labelcols="1" cols="1"/> 
+            <field name="work_restrictions_text" label="If Yes, describe restrictions" type="textarea" rows="4" columns="50" hoverover="If Yes, describe the work restrictions" labelcols="1" cols="1"/>         
+            <field name="restrictions_period" label="How long will the work restrictions apply" type="dropdown_list" list="C4Period" hoverover="How long will the work restrictions apply?" size="12" maxlength="12" labelcols="1" cols="3"/> 
+            <field name="work_options" label="Can Patient return to work?(check only one)" type="dropdown_list" list="C4Return" hoverover="Can Patient return to work?(check only one):" size="12" maxlength="12" labelcols="1" cols="1"/>
+            <field name="work_option_text" label="Explain, or specify date" type="textarea" rows="2" columns="50" hoverover="Please, explain or specify date" labelcols="1" cols="1"/>         
+            <field name="limit_options" label="Lmitations" type="checkbox_list" list="C4Limits" hoverover="Return to work limitations" size="12" maxlength="12" labelcols="1" cols="3"/>
+            <field name="limits_quant_text" label="Describe the limitations" type="textarea" rows="2" columns="50" hoverover="Describe/quantify the limitations" labelcols="1" cols="1"/>         
+            <field name="limits_period" label="How long will this limitations apply" type="dropdown_list" list="C4Period" hoverover="How long will this limitations apply?" size="12" maxlength="12" labelcols="1" cols="1"/> 
+            <field name="return_work_discuss" label="Discussed patient returning to work with" type="dropdown_list" list="C4Discuss" hoverover="With whom will you discuss the patient returning to work and/or limitations?" size="12" maxlength="12" labelcols="1" cols="1"/> 
+            <field name="benefit_rehab" label="Would the patient benefit from vocational rehabilitation" type="dropdown_list" list="YN" hoverover="Would the patient benefit from vocational rehabilitation?" size="5" maxlength="5" labelcols="1" cols="1"/> 
+        </section>
+    </manual>
+    <list name="YN" label="Yes/No" type="standard" id="YN" import="no"/>
+    <list name="NoY" label="No/Yes" type="standard" id="NoY" import="no"/>
+    <list name="yesnona" label="NA/Yes/No" type="standard" id="yesnona" import="no"/>
+    <list name="C4Tests" label="C4: Needs" type="standard" id="C4Tests" import="no"/>
+    <list name="C4Refs" label="C4: Refs" type="standard" id="C4Refs" import="no"/>
+    <list name="C4NextVisit" label="C4: Next Visit" type="standard" id="C4NextVisit" import="no"/>
+    <list name="C4Period" label="C4: Limit Period" type="standard" id="C4Period" import="no"/>
+    <list name="C4Return" label="C4: return to Work" type="standard" id="C4Return" import="no"/>
+    <list name="C4Limits" label="C4: Limitations" type="standard" id="C4Limits" import="no"/>
+    <list name="C4Discuss" label="C4: Discussions" type="standard" id="C4Discuss" import="no"/>
+    
+</form>

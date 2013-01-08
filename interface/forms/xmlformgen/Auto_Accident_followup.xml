@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<form>
+    <table type="form">form_acc_auto_followup</table>
+    <RealName>Auto-accident Follow-up</RealName>
+    <safename>accident_auto_followup</safename>
+    <style cells_per_row="4">layout</style>
+    <acl table="patients">med</acl>
+    <manual>
+        <section name="Initial" label="Initial Visit Information">
+<!--           <field name="description" label="Accident and Injury Description" type="textarea" rows="4" columns="50" hoverover="Describe the accident and injuries" labelcols="1" cols="3"/>
+            <field name="date_accident" label="Accident Date" type="date" hoverover="Accident date/Symptom first appear" labelcols="1" cols="1"/>
+            <field name="claim_number" label="Claim number" type="textfield" hoverover="Insurance Claim Number" size="15" maxlength="15" labelcols="1" cols="1"/>
+
+            <field name="date_symptom" label="Symptom first appeared" type="date" hoverover="When did Symptoms first appear?" labelcols="1" cols="1"/>
+            <field name="date_visit1" label="First visit for this Accident" type="date" hoverover="When did Patient first consult you for this condition" labelcols="1" cols="1"/>
+-->
+        </section>
+        <section name="Current" label="Current Changes">
+            <field name="same_condition" label="Same condition prior?" type="dropdown_list" list="NoY" hoverover="Has Patient ever had same or similar condition?" size="5" maxlength="5" 
+              labelcols="1" cols="1"/>
+            <field name="same_text" label="If YES, when and describe" type="textfield" hoverover="If YES, when and describe" size="30" maxlength="30" labelcols="1" cols="1"/>
+
+            <field name="solely_accident" label="Solely result of the Accident?" type="dropdown_list" list="YN" hoverover="Is condition solely a result of this auto accident?" size="5" maxlength="5" labelcols="1" cols="1"/>
+            <field name="solely_text" label="If NO, explain" type="textfield" hoverover="If NO, explain" size="40" maxlength="40" labelcols="1" cols="1"/>
+
+            <field name="due_employment" label="Condition due employment?" type="dropdown_list" list="NoY" hoverover="Is condition due to injury arising out of Patient employment?" size="3" maxlength="5" labelcols="1" cols="3"/>
+            <field name="disability" label="Will result in PERMANENT disability?" type="dropdown_list" list="yesnona" hoverover="Will injury result in significant disfigurement or permanent disability?" size="3" maxlength="5" labelcols="1" cols="1"/>
+            <field name="disability_text" label="If YES, describe" type="textfield" hoverover="If YES, describe" size="70" maxlength="70" labelcols="1" cols="1"/>
+
+            <field name="disable_from" label="Patient was disable From:" type="date" hoverover="Patient was Disable from:" labelcols="1" cols="1"/>
+            <field name="disable_to" label="To:" type="date" hoverover="Patient was Disable to:" labelcols="1" cols="1"/>
+            <field name="return_work" label="Would return to work on" type="date" hoverover="If still disable the Patient should be able return to work on:" labelcols="1" cols="3"/>
+            <field name="need_rehab" label="Will require Occupational therapy?" type="dropdown_list" list="NoY" hoverover="Will the patient require rehab and/or Occupational therapy as a result of injury?" size="3" maxlength="5" labelcols="1" cols="3"/>
+            <field name="rehab_text" label="    If YES, describe" type="textfield" hoverover="If YES, describe your recommendation" size="80" maxlength="80" labelcols="1" cols="3"/>
+        </section>
+    </manual>
+    <list name="YN" label="Yes/No" type="standard" id="YN" import="no"/>
+    <list name="NoY" label="No/Yes" type="standard" id="NoY" import="no"/>
+    <list name="yesnona" label="NA/Yes/No" type="standard" id="yesnona" import="no"/>
+    
+</form>
