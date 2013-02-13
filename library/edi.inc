@@ -861,4 +861,164 @@ function arrFormated(&$item, $key){
 	$item = substr($item,1,strlen($item)-1);
 	$item = "'".$item;
 }	
+
+// Process 271 result file content
+function process_271_results($fileArray) {
+
+    $segSeparator = "~";
+    $statusY = "Active";
+    $statusN = "Inactive";
+    $statusU = "Undetermined";
+    $dtNow = date('Ymd');
+
+    $Segments271 = array();
+    $rpt = array();
+
+    // Loop through each line (this handles 1-line file too)
+    foreach ($fileArray as $lineValue) {
+        // parse all the segments in to $Segments271 array
+        // assumption: line contains complete segments
+        $Segments271 = explode($segSeparator, $lineValue);
+
+        foreach ($Segments271 as $segData) {
+            $segValues = explode("*", $segData);
+            $segId = $segValues[0];
+
+            // Switch Case for Segment
+            switch ($segId) {
+                case 'ISA':
+                    $x12PartnerId = $segValues[6];
+                    break;
+
+                case 'ST':
+                    $patient_id = "";
+                    $nm1Seg = "";
+                    $msgArray = array();
+                    $msgTxt = "";
+                    $status = $statusY;
+                    $cop = "";
+                    $ded = "";
+                    $dedRemain = "";
+                    $rptLine = array();
+                    $fromDt = "20000101";
+                    $toDt = "99991231";
+                    break;
+
+                case 'NM1':
+                    if ($segValues[1] == "PR") {
+                        $rptLine['insurance'] = $segValues[3];
+                    } else
+                    if ($segValues[1] == "IL" or $segValues[1] == "03") {
+                        //NM1 for subscriber or dependent
+                        $nm1Seg = $segValues;
+                        $rptLine['fName'] = $segValues[4];
+                        $rptLine['lName'] = $segValues[3];
+                        $rptLine['policy'] = $segValues[9];
+                    }
+                    break;
+
+                case 'AAA':
+                    $aaa1 = $segValues[1];
+                    $aaa3 = $segValues[3];
+                    if ($aaa1 == "N" && $aaa3 == "67") {
+                        $status = $statusU;
+                        $msgTxt = "N67:Invalid Request. Reason Unknown";
+                    } else
+                    if ($aaa1 == "N" && $aaa3 == "79") {
+                        $status = $statusU;
+                        $msgTxt = "N79:Invalid Request. Check Insurance Payor ID";
+                    } else
+                    if ($aaa1 == "Y" && $aaa3 == "67") {
+                        $status = $statusU;
+                        $msgTxt = "Y67:Patient Not Found";
+                    } else
+                    if ($aaa1 == "Y" && $aaa3 == "71") {
+                        $status = $statusU;
+                        $msgTxt = "Y71:Invalid Subscriber DOB";
+                    } else
+                    if ($aaa1 == "Y" && $aaa3 == "73") {
+                        $status = $statusU;
+                        $msgTxt = "Y73:Invalid Subscriber Name";
+                    } else
+                    if ($aaa1 == "Y" && $aaa3 == "75") {
+                        $status = $statusN;
+                        $msgTxt = "Y75:Subscriber not found";
+                    } else {
+                        $status = $statusU;
+                        $msgTxt = "Y--:Invalid Request";
+                    }
+
+                    break;
+
+                case 'DTP':
+                    if (($segValues[1] == "307" OR $segValues[1] == "291") && $segValues[2] == 'RD8') {
+                        $dts = explode('-', $segValues[3]);
+                        $fromDt = $dts[0];
+                        $toDt = $dts[1];
+                    } else
+                    if ($segValues[1] == "346" OR $segValues[1] == "356") {
+                        $fromDt = $segValues[3];
+                    } else
+                    if ($segValues[1] == "347" OR $segValues[1] == "357") {
+                        $toDt = $segValues[3];
+                    }
+                    break;
+
+                case 'REF':
+                    if ($segValues[1] == "EJ") {
+                        $patient_id = $segValues[2];
+                    }
+                    break;
+
+                case 'EB':
+                    $eb1 = $segValues[1];
+                    switch ($eb1) {
+                        case 'V':
+                            $status = $statusU;
+                            break;
+                        case 'B':
+                            if ($segValues[3] == '98') {
+                                // Co-pays
+                                $cop = $segValues[7];
+                                $rptLine['copay'] = $cop;
+                            }
+                            break;
+                        case 'C':
+                            if ($segValues[6] == '23') {
+                                //yearly deductible
+                                $ded = $segValues[7];
+                                $rptLine['deductible'] = $ded;
+                            } else {
+                                if ($segValues[6] == '29') {
+                                    //remaining deductible
+                                    $dedRemain = $segValues[7];
+                                }
+                            }
+                            break;
+                    }
+                    break;
+
+                case 'MSG':
+                    array_push($msgArray, $segValues[1]);
+                    break;
+
+                case 'SE':
+                    //end of loops for a patient
+                    if ($fromDt > $dtNow OR $toDt < $dtNow OR $fromDt == $toDt) {
+                        $status = $statusN;
+                        $msgTxt = "Eligibility Dates: " . $fromDt . "-" . $toDt . $msgTxt;
+                    }
+                    $msgTxt .= "\n" . $msgArray[0] . $msgArray[1];
+                    eligibility_response_save($status, $msgTxt, $x12PartnerId);
+
+                    eligibility_verification_save($msgTxt, $x12PartnerId, $patient_id, $nm1Seg, $cop, $ded, $dedRemain);
+                    $rptLine['status'] = $status;
+                    $rptLine['msg'] = $msgTxt;
+                    array_push($rpt, $rptLine);
+                    break;
+            }
+        }
+    }
+    return $rpt;
+}
 ?>
