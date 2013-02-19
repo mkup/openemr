@@ -220,6 +220,8 @@ include_once("$srcdir/edi.inc");
 
 // END - INCLUDE STATEMENTS
 //  File location (URL or server path)
+$EXT = "*.elr";
+$EXT_LEN = strlen($EXT);
 
 $target = $GLOBALS['edi_271_file_path'];
 
@@ -244,12 +246,21 @@ if (isset($_FILES) && !empty($_FILES)) {
             // Reads the content of the file
             $Response271 = file($FilePath);
             $rpt = process_271_results($Response271);
-            if (!$rpt) $messageEDI = true;
+            if (!$rpt)
+                $messageEDI = true;
         }
     } else {
         $message .= htmlspecialchars(xl('Sorry, there was a problem uploading your file'), ENT_NOQUOTES) . "<br><br>";
     }
-}
+} else 
+    if (isset($_GET['file_selected']) && !empty($_GET['file_selected'])) {
+            $FilePath = $target . $_GET['file_selected'];
+            $Response271 = file($FilePath);
+            $rpt = process_271_results($Response271);
+            $message = htmlspecialchars(xl('The following EDI file has been uploaded') . ': "' . $FilePath . '"', ENT_NOQUOTES);
+            if (!$rpt)
+                $messageEDI = true;    
+    }
 ?>
 <html>
     <head>
@@ -280,12 +291,23 @@ if (isset($_FILES) && !empty($_FILES)) {
                     display: none;
                 }
             }
+            #report_results table thead {
+                cursor: pointer;
+            }
 
         </style>
 
         <script type="text/javascript" src="../../library/textformat.js"></script>
         <script type="text/javascript" src="../../library/dialog.js"></script>
-        <script type="text/javascript" src="../../library/js/jquery.1.3.2.js"></script>
+        <script type="text/javascript" src="../../library/js/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="../../library/js/jquery.tablesorter.min.js"></script>
+
+        <script type="text/javascript" id="js">
+            $(document).ready(function() { 
+                $("#results").tablesorter(); 
+            } 
+        ); 
+        </script>
 
         <script type="text/javascript">
             function edivalidation(){
@@ -310,17 +332,17 @@ if (isset($_FILES) && !empty($_FILES)) {
         <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
         <?php
         if (isset($message) && !empty($message)) {
-        ?>
+            ?>
             <div style="margin-left:25%;width:50%;color:RED;text-align:center;font-family:arial;font-size:15px;background:#ECECEC;border:1px solid;" ><?php echo $message; ?></div>
-        <?php
+            <?php
             $message = "";
         }
         if (isset($messageEDI)) {
-        ?>
+            ?>
             <div style="margin-left:25%;width:50%;color:RED;text-align:center;font-family:arial;font-size:15px;background:#ECECEC;border:1px solid;" >
-            <?php echo htmlspecialchars(xl('Please choose the proper formatted EDI-271 file'), ENT_NOQUOTES); ?>
-        </div>
-        <?php
+                <?php echo htmlspecialchars(xl('Please choose the proper formatted EDI-271 file'), ENT_NOQUOTES); ?>
+            </div>
+            <?php
             $messageEDI = "";
         }
         ?>
@@ -366,10 +388,88 @@ if (isset($_FILES) && !empty($_FILES)) {
 
             </form>
         </div>
-	<?php
-            if (isset($rpt) && count($rpt) > 0) {
-              show_271_results($rpt);
-              }
+        <?php
+        if (isset($rpt) && count($rpt) > 0) {
+            //show_271_results($rpt);
+            echo "<div id='report_results'>
+			<table id='results' class='tablesorter'>
+				<thead>
+                                    <tr>
+					<th style='width:15%;'>	" . htmlspecialchars(xl('Name'), ENT_NOQUOTES) . "</th>
+					<th style='width:10%;'>	" . htmlspecialchars(xl('Policy No'), ENT_NOQUOTES) . "</th>
+					<th style='width:15%;' > " . htmlspecialchars(xl('Insurance Co'), ENT_NOQUOTES) . "</th>
+					<th style='width:10%;'>	" . htmlspecialchars(xl('Status'), ENT_NOQUOTES) . "</th>
+					<th style='width:5%;' >	" . htmlspecialchars(xl('Copay'), ENT_NOQUOTES) . "</th>
+					<th style='width:5%;' >	" . htmlspecialchars(xl('Deductible'), ENT_NOQUOTES) . "</th>
+					<th style='width:40%;' > " . htmlspecialchars(xl('Messages'), ENT_NOQUOTES) . "</th>
+                                    </tr>
+                                </thead>
+
+				<tbody>
+					
+		";
+            $i = 0;
+            foreach ($rpt as $row) {
+
+                echo "	<tr id='PR" . $i . "_" . htmlspecialchars($row['policy_number'], ENT_QUOTES) . "'>
+				<td class ='detail' style='width:15%;'>" . htmlspecialchars($row['lName'], ENT_NOQUOTES) . ", " . htmlspecialchars($row['fName'], ENT_NOQUOTES) . "</td>
+				<td class ='detail' style='width:10%;'>" . htmlspecialchars($row['policy'], ENT_NOQUOTES) . "</td>
+				<td class ='detail' style='width:15%;'>" . htmlspecialchars($row['insurance'], ENT_NOQUOTES) . "</td>
+				<td class ='detail' style='width:10%;'>" . htmlspecialchars($row['status'], ENT_NOQUOTES) . "</td>
+				<td class ='detail' style='width:5%;'>" . htmlspecialchars($row['copay'], ENT_NOQUOTES) . "</td>
+				<td class ='detail' style='width:5%;'>" . htmlspecialchars($row['deductible'], ENT_NOQUOTES) . "</td>
+				<td class ='detail' style='width:40%;'>" . htmlspecialchars($row['msg'], ENT_NOQUOTES) . "</td>
+			</tr>			
+		";
+            }
+
+            if ($i == 0) {
+
+                echo "	<tr>
+				<td class='norecord' colspan=9>
+					<div style='padding:5px;font-family:arial;font-size:13px;text-align:center;'>" . htmlspecialchars(xl('No records found'), ENT_NOQUOTES) . "</div>
+				</td>
+			</tr>	";
+            }
+            echo "	</tbody>
+			</table>
+       </div>";
+        }
+        else {
+            echo "<div id='report_results'>
+			<table id='files' class='tablesorter'>
+				<thead>
+                                    <tr>
+					<th>	" . htmlspecialchars(xl('File Name'), ENT_NOQUOTES) . "</th>
+					<th>	" . htmlspecialchars(xl('Date'), ENT_NOQUOTES) . "</th>
+                                    </tr>
+                                </thead>
+				<tbody>
+					
+		";
+            $fls = glob($target . $EXT);
+            foreach ($fls as $fl) 
+                $flArr[filemtime($fl)] = basename($fl); 
+            krsort($flArr);
+            $i=0;
+            foreach ($flArr as $dt => $fname) {
+                    echo "	<tr >
+				<td class ='detail' >" . "<a href='edi_271.php?file_selected=" . 
+                                    htmlspecialchars($fname, ENT_NOQUOTES) . 
+                                    "' class='detail' onClick='top.restoreSession()' <span>" . 
+                                    htmlspecialchars($fname, ENT_NOQUOTES) . 
+                                    "</span></a></td>
+				<td class ='detail' >" . htmlspecialchars(date('D Y-m-d H:i',$dt), ENT_NOQUOTES) . "</td>
+			</tr>			
+                        ";
+                    if (++$i > 6) break;
+                    
+            }
+            
+            echo "	</tbody>
+			</table>
+       </div>";
+        }
         ?>
     </body>
 </html>
