@@ -138,7 +138,7 @@
 			$from_date,
 			$to_date
 		));
-		print_elig($res,$X12info,$compEleSep,$segTer);
+		echo print_elig($res,$X12info,$compEleSep,$segTer);
 		exit; 
 	}
 ?>
