@@ -22,6 +22,7 @@
 
 // The location/name of a temporary file to hold printable statements.
 //
+require_once("$srcdir/patient.inc");
 
 $STMT_TEMP_FILE = $GLOBALS['temporary_files_dir'] . "/openemr_statements.txt";
 $STMT_TEMP_FILE_PDF = $GLOBALS['temporary_files_dir'] . "/openemr_statements.pdf";
@@ -133,18 +134,22 @@ function create_statement($stmt) {
   $row = sqlFetchArray($atres);
  $billing_contact = "{$row['attn']}";
  $billing_phone = "{$row['phone']}";
+ 
+ $patient_phone = getPatientData($stmt['pid'], 'phone_home ');
 
  // Text only labels
  
  $label_addressee = xl('ADDRESSEE');
  $label_remitto = xl('REMIT TO');
  $label_chartnum = xl('Chart Number');
+ $label_ptPhone = xl('Ph.');
  $label_insinfo = xl('Insurance information on file');
  $label_totaldue = xl('Total amount due');
  $label_payby = xl('If paying by');
- $label_cards = xl('VISA/MC/AMEX/Dis');  
+ $label_cards = xl('VISA/MC');  
  $label_cardnum = xl('Card');
  $label_expiry = xl('Exp');
+ $label_seccode = xl('Security Code');
  $label_sign = xl('Signature');
  $label_retpay = xl('Return above part with your payment');
  $label_pgbrk = xl('STATEMENT SUMMARY');
@@ -161,9 +166,9 @@ function create_statement($stmt) {
  // reformatted to handle i8n by tony
 
 $out  = sprintf("%-30s %-23s %-s\n",$clinic_name,$stmt['patient'],$stmt['today']);
-$out .= sprintf("%-30s %s: %-s\n",$clinic_addr,$label_chartnum,$stmt['pid']);
+$out .= sprintf("%-30s %s: %-s  %s: %s\n",$clinic_addr,$label_chartnum,$stmt['pid'],$label_ptPhone,$patient_phone['phone_home']);
 $out .= sprintf("%-30s %-s\n",$clinic_csz,$label_insinfo);
-$out .= sprintf("%-30s %s: %-s\n",null,$label_totaldue,null);
+$out .= sprintf("%-30s %s: %-s\n",null,$label_totaldue);
 $out .= "\n\n";
 $out .= sprintf("%-30s %-s\n",$label_addressee,$label_remitto);
 $out .= sprintf("%-32s %s\n",$stmt['to'][0],$remit_name);
@@ -176,8 +181,8 @@ $out .= sprintf("_______________________________________________________________
 $out .= "\n";
 $out .= sprintf("%-32s\n",$label_payby.' '.$label_cards);
 $out .= "\n";
-$out .= sprintf("%s_____________________  %s______ %s___________________\n",
-                $label_cardnum,$label_expiry,$label_sign);
+$out .= sprintf("%s_______________________________  %s______ %s______\n %s___________________\n",
+                $label_cardnum,$label_expiry,$label_seccode,$label_sign);
 $out .= sprintf("%-20s %s\n",null,$label_retpay);
 $out .= sprintf("-----------------------------------------------------------------\n");
 $out .= "\n";
