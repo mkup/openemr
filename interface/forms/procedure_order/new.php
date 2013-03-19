@@ -28,10 +28,13 @@ require_once("$srcdir/formatting.inc.php");
 require_once("../../orders/qoe.inc.php");
 require_once("../../orders/gen_hl7_order.inc.php");
 require_once("../../../custom/code_types.inc.php");
+require_once("../../orders/labCustom.php");
 
 // Defaults for new orders.
+$encRow = sqlQuery("select * from form_encounter where encounter = $encounter");
+
 $row = array(
-  'provider_id' => $_SESSION['authUserID'],
+  'provider_id' => $encRow['provider_id'],
   'date_ordered' => date('Y-m-d'),
   'date_collected' => date('Y-m-d H:i'),
 );
@@ -62,6 +65,22 @@ function QuotedOrNull($fld) {
 }
 
 $formid = formData('id', 'G') + 0;
+
+// Get the list of labs supporting patient's insurance
+// id1=name1?id2=name2
+$labsAr = array();
+if ($_POST['elig_labs']) {
+    $eligLabStr = $_POST['elig_labs'];
+    parse_str($eligLabStr, $labsAr);
+} else {
+    $labsAr = getEligLabs($_SESSION['pid']);
+    $eligLabStr = '';
+    $amp = '';
+    foreach ($labsAr as $labId=>$labName) {
+        $eligLabStr .= $amp . $labId . '=' . $labName;
+        $amp = '&';
+    }
+}
 
 // If Save or Transmit was clicked, save the info.
 //
@@ -252,7 +271,7 @@ function set_proc_type(typeid, typename) {
  var ptdescname = 'form_proc_type_desc[' + gbl_formseq + ']';
  f[ptvarname].value = typeid;
  f[ptdescname].value = typename;
-}
+ }
 
 // This is also for callback by the find-procedure-type popup.
 // Sets the contents of the table containing the form fields for questions.
@@ -373,7 +392,7 @@ function validate(f) {
   <td width='1%' valign='top' nowrap><b><?php xl('Ordering Provider','e'); ?>:</b></td>
   <td valign='top'>
 <?php
-generate_form_field(array('data_type'=>10,'field_id'=>'provider_id'),
+generate_form_field(array('data_type'=>10,'field_id'=>'provider_id','empty_title'=>"SKIP"),
   $row['provider_id']);
 ?>
   </td>
@@ -384,15 +403,14 @@ generate_form_field(array('data_type'=>10,'field_id'=>'provider_id'),
   <td valign='top'>
    <select name='form_lab_id' onchange='lab_id_changed()'>
  <?php
-  $ppres = sqlStatement("SELECT ppid, name FROM procedure_providers " .
-    "ORDER BY name, ppid");
-  while ($pprow = sqlFetchArray($ppres)) {
-    echo "<option value='" . attr($pprow['ppid']) . "'";
-    if ($pprow['ppid'] == $row['lab_id']) echo " selected";
-    echo ">" . text($pprow['name']) . "</option>";
+  foreach ($labsAr as $labId=>$labName) {
+    echo "<option value='" . attr($labId) . "'";
+    if ($labId == $row['lab_id']) echo " selected";
+    echo ">" . text($labName) . "</option>";
   }
 ?>
    </select>
+   <input type='hidden' name='elig_labs' value='<?php echo $eligLabStr ?>' />
   </td>
  </tr>
 
