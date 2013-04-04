@@ -9,7 +9,7 @@
 //require_once('../globals.php');
 require_once (dirname(__FILE__) . "/../../library/Claim.class.php");
 require_once (dirname(__FILE__) . '/../../custom/code_types.inc.php');
-require_once ('labCustom.php');
+require_once ('labCustom.inc.php');
 
 Class ProcedureOrder extends Claim {
 

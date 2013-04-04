@@ -28,7 +28,7 @@ require_once("$srcdir/formatting.inc.php");
 require_once("../../orders/qoe.inc.php");
 require_once("../../orders/gen_hl7_order.inc.php");
 require_once("../../../custom/code_types.inc.php");
-require_once("../../orders/labCustom.php");
+require_once("../../orders/labCustom.inc.php");
 
 // Defaults for new orders.
 $encRow = sqlQuery("select * from form_encounter where encounter = $encounter");

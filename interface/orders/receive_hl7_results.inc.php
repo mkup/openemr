@@ -18,6 +18,7 @@
 * @package   OpenEMR
 * @author    Rod Roark <rod@sunsetsystems.com>
 */
+require_once("labCustom.inc.php");
 
 function rhl7InsertRow(&$arr, $tablename) {
   if (empty($arr)) return;
@@ -92,7 +93,7 @@ function rhl7ReportStatus($s) {
  * @param  string  &$hl7     The input HL7 text.
  * @return string            Error text, or empty if no errors.
  */
-function receive_hl7_results(&$hl7) {
+function receive_hl7_results(&$hl7, $pprow) {
   if (substr($hl7, 0, 3) != 'MSH') {
     return xl('Input does not begin with a MSH segment');
   }
@@ -133,7 +134,7 @@ function receive_hl7_results(&$hl7) {
   foreach ($segs as $seg) {
     if (empty($seg)) continue;
 
-    $a = explode($d1, $seg);
+    $a = explode($d1, trim($seg));
 
     if ($a[0] == 'MSH') {
       $context = $a[0];
@@ -170,7 +171,11 @@ function receive_hl7_results(&$hl7) {
       rhl7FlushReport($arep);
       $porow = false;
       $pcrow = false;
-      if ($a[2]) $in_orderid = intval($a[2]);
+      if ($a[2]) {
+          $ta = explode($d2,$a[2]);
+          $in_orderid = intval(stripPrefix($ta[0], $pprow));
+          $in_controlid = $a[3];
+      }
     }
 
     else if ($a[0] == 'NTE' && $context == 'ORC') {
@@ -183,7 +188,7 @@ function receive_hl7_results(&$hl7) {
       // Next line will do something only if there was a report with no results.
       rhl7FlushReport($arep);
       $procedure_report_id = 0;
-      if ($a[2]) $in_orderid = intval($a[2]);
+      if ($a[2]) $in_orderid = intval(stripPrefix($a[2], $pprow));
       $tmp = explode($d2, $a[4]);
       $in_procedure_code = $tmp[0];
       $in_procedure_name = $tmp[1];
@@ -196,6 +201,13 @@ function receive_hl7_results(&$hl7) {
         if (empty($porow)) {
           return xl('Procedure order') . " '$in_orderid' " . xl('was not found');
         }
+        // Verify patient's last name
+        $pLast = sqlQuery("SELECT lname FROM patient_data WHERE pid = ?", array($porow['patient_id']));
+        if (strcmp(strtoupper($pLast['lname']), strtoupper($in_lname))) {
+            return xl("Patient's last name does not match. Order number ").
+                    " '$in_orderid' ";
+        } 
+        
         if ($in_encounter) {
           if ($porow['encounter_id'] != $in_encounter) {
             return xl('Encounter ID') .
@@ -211,6 +223,10 @@ function receive_hl7_results(&$hl7) {
           // might be done here to make sure the patient seems to match.
         }
       }
+      // Set control_id, which is Lab's identifier for the order
+      $tmp = sqlStatement("UPDATE procedure_order SET control_id = ? WHERE procedure_order_id = ?", 
+                array($in_controlid, $in_orderid));
+      
       // Find the order line item (procedure code) that matches this result.
       $pcquery = "SELECT pc.* FROM procedure_order_code AS pc " .
         "WHERE pc.procedure_order_id = ? AND pc.procedure_code = ? " .
@@ -279,9 +295,6 @@ function receive_hl7_results(&$hl7) {
 
     // Add code here for any other segment types that may be present.
 
-    else {
-      return xl('Segment name') . " '${a[0]}' " . xl('is misplaced or unknown');
-    }
   }
 
   rhl7FlushResult($ares);
@@ -348,7 +361,7 @@ function poll_hl7_results(&$messages) {
           continue;
         }
         // Parse and process its contents.
-        $msg = receive_hl7_results($hl7);
+        $msg = receive_hl7_results($hl7, $pprow);
         if ($msg) {
           $messages[] = xl('Error processing file') . " '$file':" . $msg;
           ++$badcount;

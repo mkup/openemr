@@ -7,11 +7,18 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 
-function externalOrderId ($id, $pprow) {
+function externalOrderId($id, $pprow) {
     //id - procedure order id
     //ppRow - row from procedure_providers table
     $ar = getCustomVars($pprow);
     return empty($ar['prefix'])? false: sprintf($ar['prefix'] . '%05d', $id);
+}
+
+function stripPrefix($idStr, $pprow) {
+    //id - procedure order id
+    //ppRow - row from procedure_providers table
+    $ar = getCustomVars($pprow);
+    return empty($ar['prefix'])? $idStr: str_replace($ar['prefix'], '', $idStr);
 }
 
 function getEligLabs($pid) {
@@ -46,4 +53,12 @@ function getCustomVars($pprow){
     parse_str($pprow['notes'],$ar);
     return $ar;
 }
+
+function getLabInsuranceCode($labId, $insId) {
+    $sql = "select lab_code from lab_insurance " . 
+            "where id = ? and lab_id = ?";
+    $res = sqlQuery($sql, array($insId, $labId));
+    return $res['lab_code'];
+}
+
 ?>

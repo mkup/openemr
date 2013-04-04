@@ -51,7 +51,9 @@ function storeNote($s) {
 }
 
 function generate_order_report($orderid, $input_form=false) {
-  // Check authorization.
+  global $aNotes;
+  
+    // Check authorization.
   $thisauth = acl_check('patients', 'med');
   if (!$thisauth) return xl('Not authorized');
 
