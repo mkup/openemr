@@ -1099,6 +1099,26 @@ Class AccidentClaim extends Claim {
     function WCBRating() {
         return $this->provider['valedictory'];
     }
+  function diagCodesArray($prockey) {
+    $dia = array();
+    $da = $this->diagArray();
+    $atmp = explode(':', $this->procs[$prockey]['justify']);
+    foreach ($atmp as $tmp) {
+      if (!empty($tmp)) {
+        $code_data = explode('|',$tmp);
+        if (!empty($code_data[1])) {
+          //Strip the prepended code type label
+          $diag = $code_data[1];
+        }
+        else {
+          //No prepended code type label
+          $diag = $code_data[0];
+        }
+        $dia[] = $diag;
+      }
+    }
+    return $dia;
+  }
 }
 
 ?>
