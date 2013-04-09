@@ -1,0 +1,50 @@
+/* This CSS is used ONLY by the form defined in this same folder 
+ * customize it as you see fit for your specific form
+ */ 
+
+/* turn off borders for fieldsets, to make them invisible */
+fieldset {
+border: none;
+}
+
+/* links should be undersized */
+.link {
+    font-size: 80%;
+}
+
+/* links should grow when clicked */
+.link_submit {
+    font-size: 120%;
+}
+
+
+/* The title should be visibly larger on 'paper' style forms. */
+.title {
+    font-size: 150%;
+    font-weight: bold;
+}
+
+/* make the entire form 750 pixels wide, with a paper-like background, a black border, and clear margins. */
+#form_container {
+    border: 1px solid black;
+    background-color: #ffffcc;
+    width: 1000px;
+    padding: 10px;
+    margin: 10px 0px 10px 0px;
+}
+
+/* do something similar, by making the entire form have a paper-like background, a black border, and margins, but do not set a size, so that the form may flow on paper. */
+#print_form_container {
+    border: 1px solid black;
+    background-color: #ffffcc;
+    padding: 10px;
+    margin: 10px 0px 10px 0px;
+}
+
+.sectionlabel {
+    visibility:hidden;
+}
+
+
+
+
