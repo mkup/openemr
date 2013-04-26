@@ -78,7 +78,7 @@ $fileOut = fopen($fileOutName,"w");
 fputs($fileOut, $str);
 fclose($fileOut);
 
-echo date('Y-m-d') . ": Created 270-Eligibility request $fileOutName \n";
+echo date('Y-m-d H:i:s') . ": Created 270-Eligibility request $fileOutName \n";
 
 // upload $fileOutName to the X12 partner's site
 

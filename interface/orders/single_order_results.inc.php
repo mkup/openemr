@@ -59,7 +59,7 @@ function generate_order_report($orderid, $input_form=false) {
 
   $orow = sqlQuery("SELECT " .
     "po.procedure_order_id, po.date_ordered, " .
-    "po.order_status, po.specimen_type, " .
+    "po.order_status, po.specimen_type, po.control_id, " . 
     "pd.pubpid, pd.lname, pd.fname, pd.mname, " .
     "fe.date, " .
     "pp.name AS labname, " .
@@ -132,16 +132,19 @@ function showpnotes(orderid) {
  <tr bgcolor='#cccccc'>
   <td width='5%' nowrap><?php echo xlt('Patient ID'); ?></td>
   <td width='45%'><?php echo myCellText($orow['pubpid']); ?></td>
-  <td width='5%' nowrap><?php echo xlt('Order ID'); ?></td>
+  <td width='5%' nowrap><?php echo xlt('Order ID') ; ?></td>
 
   <td width='45%'>
 <?php
   echo "   <a href='" . $GLOBALS['webroot'];
-  echo "/interface/orders/order_manifest.php?orderid=";
-  echo attr($orow['procedure_order_id']);
-  echo "' target='_blank' onclick='top.restoreSession()'>";
+  echo "/interface/forms/procedure_order/print.php?orderid=";
+  echo text($orderid);
+  echo "'>";
   echo myCellText($orow['procedure_order_id']);
-  echo "</a>\n";
+  echo "</a>";
+  if (!empty($orow['control_id'])) 
+          echo " / " . myCellText($orow['control_id']);
+  echo "\n";
 ?>
   </td>
  </tr>

@@ -102,15 +102,16 @@ function openResults(orderid) {
  onsubmit='return validate(this)'>
 
 <?php
-$messages = array();
-$errmsg = poll_hl7_results($messages);
-foreach ($messages as $message) {
-  echo text($message) . "<br />\n";
+if (!$GLOBALS['MI10_elab']) {
+    $messages = array();
+    $errmsg = poll_hl7_results($messages);
+    foreach ($messages as $message) {
+        echo text($message) . "<br />\n";
+    }
+    if ($errmsg) {
+        echo "<font color='red'>" . text($errmsg) . "</font><br />\n";
+    }
 }
-if ($errmsg) {
-  echo "<font color='red'>" . text($errmsg) . "</font><br />\n";
-}
-
 // Process uploaded file if there is one.
 if (!empty($_FILES['userfile']['name'])) { // if upload was attempted
   if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {

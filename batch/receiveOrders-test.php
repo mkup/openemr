@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (C) 2013 Mark Kuperman <mark.kuperman@mi-10.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -6,15 +7,8 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 //
-// This a batch program that retrieves EDI 271 fils from the X12 partner's site
-// This file is called from a file containing X12 partner specifics:
-// $X12 = "GatewayEDI";
-// $SRV = "sftp.gatewayedi.com";
-// $USR = "ID";
-// $PASS = "PASS";
-// chdir(dirname(__FILE__));
-// include('./eligibilityResponse.php');
-
+// This a batch program that sends procedure orders to the host
+// specified by Lab's SFTP parameters enterered today
 // Disable PHP timeout.  This will not work in safe mode.
 ini_set('max_execution_time', '0');
 
@@ -30,28 +24,20 @@ $sanitize_all_escapes = true;
 
 //Settings that will override globals.php
 $_GET['site'] = "default";
+
 $ignoreAuth = true; // no login required
 
 require_once('../interface/globals.php');
-require_once('../library/edi.inc');
+require_once('../library/sql.inc');
+require_once('../interface/orders/receive_hl7_results.inc.php');
 
 // Force logging off
-$GLOBALS["enable_auditlog"]=0;
-// Segment Terminator	
-$segTer	= "~"; 	
-// Component Element seperator
-$compEleSep = "^";
+$GLOBALS["enable_auditlog"] = 0;
 
-$ediDir = $GLOBALS['edi_271_file_path'];
-chdir($ediDir);
-echo date('Y-m-d H:i:s') . ": Retreiving 271-Eligibility responses \n";
 
-$exc = "sshpass -p " . $PASS . " sftp " . $USR . "@" . $SRV . "<<EOF
-     cd eligibilityresponses
-     mget *.elr
-     rm *.elr
-     quit
-EOF
-";
-exec($exc);
+$pprow = sqlQuery("select * from procedure_providers where ppid = 2");
+
+$hl7 = file_get_contents("/users/bioref/CC897/results/CC897_5076832.HL7");
+$msg = receive_hl7_results($hl7, $pprow);
+echo $msg;
 ?>
