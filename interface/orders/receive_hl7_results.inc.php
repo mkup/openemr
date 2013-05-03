@@ -20,6 +20,60 @@
 */
 require_once("labCustom.inc.php");
 
+function lab_exchange_match_patient($externalId, $firstName, $middleName, $lastName, $dob, $gender, $ssn, $address) {
+    $sql = "SELECT pid from patient_data WHERE ";
+    $where = "";
+    
+    if (ereg_replace("[:space:]", "", $firstName) != "")
+        $where .= "fname = '".add_escape_custom($firstName)."' " ;
+
+    if (ereg_replace("[:space:]", "", $lastName) != "") {
+        if ($where != "") $where .= "AND ";
+        $where .= "lname = '".add_escape_custom($lastName)."' " ;
+    }
+
+//    if (ereg_replace("[:space:]", "", $middleName) != ""){
+//        if ($where != "") $where .= "AND ";
+//        $where .= "mname = '".add_escape_custom($middleName)."' " ;
+//    }
+    
+    if (ereg_replace("[:space:]", "", $dob) != ""){
+        if ($where != "") $where .= "AND ";
+        $where .= "DOB = DATE_FORMAT('".add_escape_custom($dob)."', '%Y-%m-%d') " ;
+    }
+
+    if (ereg_replace("[:space:]", "", $gender) != "") {
+        if ($gender =="F") $sex = "Female";
+        if ($gender =="M") $sex = "Male";
+        
+        if(isset($sex))
+        {
+            if ($where != "") $where .= "AND ";
+            $where .= "(sex = '".add_escape_custom($sex)."' OR sex = '" . add_escape_custom($gender) ."')" ;
+        }
+    }
+
+    if (ereg_replace("[:space:]", "", $ssn) != ""){
+        if ($where != "") $where .= "AND ";
+        // Change to xxx-xx-xxxx format.
+        $ss = substr($ssn,0,3)."-".substr($ssn,3,2)."-".substr($ssn,5);
+        $where .= "(ss = '".add_escape_custom($ssn)."' OR ss = '".add_escape_custom($ss)."' OR ss = '')";
+    }
+        
+    if ($where == "") {
+        return false;
+    }
+    else {
+        $res = sqlQuery($sql . $where);
+        if ($res['pid']) {
+            return $res['pid'];
+        }
+        else {
+            return false;
+        }
+    }
+}
+
 function rhl7InsertRow(&$arr, $tablename) {
   if (empty($arr)) return;
 
@@ -104,11 +158,6 @@ function receive_hl7_results(&$hl7, $pprow) {
   $today = time();
 
   $in_message_id = '';
-  $in_ssn = '';
-  $in_dob = '';
-  $in_lname = '';
-  $in_fname = '';
-  $in_orderid = 0;
   $in_procedure_code = '';
   $in_report_status = '';
   $in_encounter = 0;
@@ -137,6 +186,11 @@ function receive_hl7_results(&$hl7, $pprow) {
     $a = explode($d1, trim($seg));
 
     if ($a[0] == 'MSH') {
+      $in_ssn = '';
+      $in_dob = '';       
+      $in_lname = '';
+      $in_fname = '';
+      $in_orderid = 0;
       $context = $a[0];
       if ($a[8] != 'ORU^R01') {
         return xl('Message type') . " '${a[8]}' " . xl('does not seem valid');
@@ -150,10 +204,11 @@ function receive_hl7_results(&$hl7, $pprow) {
       // Next line will do something only if there was a report with no results.
       rhl7FlushReport($arep);
       $in_ssn = $a[4];
-      $in_dob = $a[7]; // yyyymmdd format
+      $in_dob = $a[7];          // yyyymmdd format
       $tmp = explode($d2, $a[5]);
       $in_lname = $tmp[0];
       $in_fname = $tmp[1];
+      $pid = lab_exchange_match_patient('', $in_fname, '', $in_lname, $in_dob, '', $in_ssn, '');
     }
 
     else if ($a[0] == 'PV1') {
@@ -174,8 +229,9 @@ function receive_hl7_results(&$hl7, $pprow) {
       if ($a[2]) {
           $ta = explode($d2,$a[2]);
           $in_orderid = intval(stripPrefix($ta[0], $pprow));
-          $in_controlid = $a[3];
-      }
+      } else 
+          $in_orderid = false;
+      $in_controlid = $a[3];
     }
 
     else if ($a[0] == 'NTE' && $context == 'ORC') {
@@ -188,19 +244,29 @@ function receive_hl7_results(&$hl7, $pprow) {
       // Next line will do something only if there was a report with no results.
       rhl7FlushReport($arep);
       $procedure_report_id = 0;
-      if ($a[2]) $in_orderid = intval(stripPrefix($a[2], $pprow));
+//      if ($a[2]) $in_orderid = intval(stripPrefix($a[2], $pprow));
       $tmp = explode($d2, $a[4]);
       $in_procedure_code = $tmp[0];
       $in_procedure_name = $tmp[1];
+      $in_orderdate = $a[7];
       $in_report_status = rhl7ReportStatus($a[25]);
       if (empty($porow)) {
-        $porow = sqlQuery("SELECT * FROM procedure_order WHERE " .
-          "procedure_order_id = ?", array($in_orderid));
+        $sql = "SELECT * FROM procedure_order WHERE ";
+        if ($in_orderid) {
+          $sql .= "procedure_order_id = ?";
+          $porow = sqlQuery($sql, array($in_orderid));
+        }
+        elseif ($pid) {
+            $sql .= "patient_id = ? AND date_collected = ?";
+            $porow = sqlQuery($sql,array($pid,  rhl7DateTime($in_orderdate)));
+        }
         // The order must already exist. Currently we do not handle electronic
         // results returned for manual orders.
         if (empty($porow)) {
-          return xl('Procedure order') . " '$in_orderid' " . xl('was not found');
+          return xl('Procedure order') . " '$in_orderid' and control ID '$in_controlid' " . xl('was not found');
         }
+        $in_orderid = $porow['procedure_order_id'];
+        
         // Verify patient's last name
         $pLast = sqlQuery("SELECT lname FROM patient_data WHERE pid = ?", array($porow['patient_id']));
         if (strcmp(strtoupper($pLast['lname']), strtoupper($in_lname))) {
