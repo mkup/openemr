@@ -191,6 +191,7 @@ function receive_hl7_results(&$hl7, $pprow) {
       $in_lname = '';
       $in_fname = '';
       $in_orderid = 0;
+      $in_rptdate = '';
       $context = $a[0];
       if ($a[8] != 'ORU^R01') {
         return xl('Message type') . " '${a[8]}' " . xl('does not seem valid');
@@ -226,12 +227,15 @@ function receive_hl7_results(&$hl7, $pprow) {
       rhl7FlushReport($arep);
       $porow = false;
       $pcrow = false;
+      $in_orderid = false;
       if ($a[2]) {
           $ta = explode($d2,$a[2]);
-          $in_orderid = intval(stripPrefix($ta[0], $pprow));
-      } else 
-          $in_orderid = false;
+          if (!empty($ta[0])) 
+              $in_orderid = intval(stripPrefix($ta[0], $pprow));
+      }
       $in_controlid = $a[3];
+      if ($a[9]) 
+          $in_rptdate = $a[9];
     }
 
     else if ($a[0] == 'NTE' && $context == 'ORC') {
@@ -315,7 +319,7 @@ function receive_hl7_results(&$hl7, $pprow) {
       $arep['procedure_order_id'] = $in_orderid;
       $arep['procedure_order_seq'] = $pcrow['procedure_order_seq'];
       $arep['date_collected'] = rhl7DateTime($a[7]);
-      $arep['date_report'] = substr(rhl7DateTime($a[22]), 0, 10);
+      $arep['date_report'] = empty($a[22])? rhl7DateTime($in_rptdate) : substr(rhl7DateTime($a[22]), 0, 10);
       $arep['report_status'] = $in_report_status;
       $arep['report_notes'] = '';
     }

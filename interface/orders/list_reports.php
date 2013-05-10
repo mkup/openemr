@@ -89,8 +89,8 @@ var mypcc = '<?php echo $GLOBALS['phone_country_code'] ?>';
 
 function openResults(orderid) {
  top.restoreSession();
- // window.open('single_order_results.php?orderid=' + orderid);
- document.location.href = 'single_order_results.php?orderid=' + orderid;
+ window.open('single_order_results.php?orderid=' + orderid);
+ //document.location.href = 'single_order_results.php?orderid=' + orderid;
 }
 
 </script>
@@ -231,13 +231,14 @@ $selects =
 
 $joins =
   "LEFT JOIN procedure_report AS pr ON pr.procedure_order_id = po.procedure_order_id AND " .
-  "pr.procedure_order_seq = pc.procedure_order_seq";
+  "pr.procedure_order_seq = pc.procedure_order_seq " .
+  "LEFT JOIN procedure_providers AS pp ON pp.ppid = po.lab_id";
 
 $orderby =
   "po.date_ordered, po.procedure_order_id, " .
   "pc.procedure_order_seq, pr.procedure_report_id";
 
-$where = "1 = 1";
+$where = "pp.protocol != 'PRINT' ";
 $sqlBindArray = array();
 
 if (!empty($form_from_date)) {
@@ -278,7 +279,8 @@ $query = "SELECT po.patient_id, " .
   "LEFT JOIN procedure_order_code AS pc ON pc.procedure_order_id = po.procedure_order_id " .
   "LEFT JOIN patient_data AS pd ON pd.pid = po.patient_id $joins " .
   "WHERE $where " .
-  "ORDER BY pd.lname, pd.fname, pd.mname, po.patient_id, $orderby";
+  "ORDER BY $orderby, pd.lname, pd.fname, pd.mname, po.patient_id ";
+//  "ORDER BY pd.lname, pd.fname, pd.mname, po.patient_id, $orderby";
 
 $res = sqlStatement($query, $sqlBindArray);
 
