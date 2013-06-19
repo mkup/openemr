@@ -7,9 +7,6 @@
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 //
-// This a batch program that sends procedure orders to the host
-// specified by Lab's SFTP parameters enterered today
-// Disable PHP timeout.  This will not work in safe mode.
 ini_set('max_execution_time', '0');
 
 //starting the PHP session (also regenerating the session id to avoid session fixation attacks)
@@ -34,15 +31,14 @@ require_once('../interface/orders/receive_hl7_results.inc.php');
 // Force logging off
 $GLOBALS["enable_auditlog"] = 0;
 
-$br = "\n";
-echo "Receive Orders Batch " . date("Y-m-d H:i:s") . $br;
+if (count($argv) > 1)
+    $fn = $argv[1];
+  else
+    $fn = date('Y-m-d');
+echo $fn . "\n";
+$pprow = sqlQuery("select * from procedure_providers where ppid = 1");
 
-$messages = array();
-$errmsg = poll_hl7_results($messages);
-foreach ($messages as $message) {
-    echo text($message) . $br;
-}
-if ($errmsg) {
-    echo $errmsg . $br;
-}
+$hl7 = file_get_contents("/var/www/openemr/sites/default/procedure_results/1/" . $fn);
+$msg = receive_hl7_results($hl7, $pprow);
+echo $msg;
 ?>

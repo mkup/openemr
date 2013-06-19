@@ -272,11 +272,11 @@ function receive_hl7_results(&$hl7, $pprow) {
         $in_orderid = $porow['procedure_order_id'];
         
         // Verify patient's last name
-        $pLast = sqlQuery("SELECT lname FROM patient_data WHERE pid = ?", array($porow['patient_id']));
-        if (strcmp(strtoupper($pLast['lname']), strtoupper($in_lname))) {
-            return xl("Patient's last name does not match. Order number ").
-                    " '$in_orderid' ";
-        } 
+//        $pLast = sqlQuery("SELECT lname FROM patient_data WHERE pid = ?", array($porow['patient_id']));
+//        if (strcmp(strtoupper($pLast['lname']), strtoupper($in_lname))) {
+//            return xl("Patient's last name does not match. Order number ").
+//                    " '$in_orderid' ";
+//        } 
         
         if ($in_encounter) {
           if ($porow['encounter_id'] != $in_encounter) {
