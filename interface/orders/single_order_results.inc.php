@@ -58,7 +58,7 @@ function generate_order_report($orderid, $input_form=false) {
   if (!$thisauth) return xl('Not authorized');
 
   $orow = sqlQuery("SELECT " .
-    "po.procedure_order_id, po.date_ordered, " .
+    "po.procedure_order_id, po.date_collected, " .
     "po.order_status, po.specimen_type, po.control_id, " . 
     "pd.pubpid, pd.lname, pd.fname, pd.mname, " .
     "fe.date, " .
@@ -156,7 +156,7 @@ function showpnotes(orderid) {
  </tr>
  <tr bgcolor='#cccccc'>
   <td nowrap><?php echo xlt('Order Date'); ?></td>
-  <td><?php echo myCellText(oeFormatShortDate($orow['date_ordered'])); ?></td>
+  <td><?php echo myCellText($orow['date_collected']); ?></td>
   <td nowrap><?php echo xlt('Print Date'); ?></td>
   <td><?php echo oeFormatShortDate(date('Y-m-d')); ?></td>
  </tr>
