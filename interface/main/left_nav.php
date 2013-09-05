@@ -1225,6 +1225,18 @@ if (!empty($reg)) {
       <?php if (!$GLOBALS['MI10_elab']) genTreeLink('RTop','orr',xl('Patient Results')); ?>
       <?php if (!$GLOBALS['MI10_elab']) genTreeLink('RTop','orb',xl('Batch Results')); ?>
       <?php genTreeLink('RTop','ore',xl('Electronic Reports')); ?>
+
+ 
+<?php
+// QUEST START
+ if ($GLOBALS['lab_quest_enable']) { ?>
+          <?php genMiscLink('RTop','lab','0',xl('Quest Lab Report'),'reports/myreports/lab_forms.php'); ?>
+          <?php genMiscLink('RTop','lab','0',xl('Orphan Lab Results'),'reports/myreports/lab_results.php'); ?>
+          <?php if (acl_check('admin', 'users'   )) genMiscLink('RTop','lab','0',xl('Quest Batch Process'),'reports/myreports/lab_batch.php'); ?>
+          <?php if (acl_check('admin', 'users'   )) genMiscLink('RTop','lab','0',xl('Quest CDC Update'),'reports/myreports/lab_update.php'); ?>
+<?php } 
+// QUEST END ?>
+
     </ul>
   </li>
   <?php
