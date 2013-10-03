@@ -140,6 +140,25 @@ function rhl7ReportStatus($s) {
   return rhl7Text($s);
 }
 
+function duplicateReport($orderId, $seqNo) {
+    $sql = "SELECT procedure_report_id, report_status FROM procedure_report " . 
+            "WHERE procedure_order_id = ? and procedure_order_seq = ?";
+    $report = sqlQuery($sql, array($orderId, $seqNo));
+   
+    $ret = false;
+    
+    if (!empty($report)) {
+        if ($report['report_status'] == "prelim") {
+            sqlStatement("delete from procedure_result where procedure_report_id=?", 
+                    array($report['procedure_report_id']));
+            sqlStatement("delete from procedure_report where procedure_report_id=?", 
+                    array($report['procedure_report_id']));
+        } else
+            $ret = true;
+    }
+    return $ret;
+}
+
 /**
  * Parse and save.
  *
@@ -315,52 +334,54 @@ function receive_hl7_results(&$hl7, $pprow) {
           array($in_orderid, $in_procedure_code, $in_procedure_name));
         $pcrow = sqlQuery($pcquery, array($in_orderid, $in_procedure_code));
       }
-      $arep = array();
-      $arep['procedure_order_id'] = $in_orderid;
-      $arep['procedure_order_seq'] = $pcrow['procedure_order_seq'];
-      $arep['date_collected'] = rhl7DateTime($a[7]);
-      $arep['date_report'] = empty($a[22])? rhl7DateTime($in_rptdate) : substr(rhl7DateTime($a[22]), 0, 10);
-      $arep['report_status'] = $in_report_status;
-      $arep['report_notes'] = '';
-    }
-
-    else if ($a[0] == 'NTE' && $context == 'OBR') {
-      $arep['report_notes'] .= rhl7Text($a[3]) . "\n";
-    }
-
-    else if ($a[0] == 'OBX') {
-      $context = $a[0];
-      rhl7FlushResult($ares);
-      if (!$procedure_report_id) {
-        $procedure_report_id = rhl7FlushReport($arep);
+      if (duplicateReport($in_orderid, $pcrow['procedure_order_seq'])) {
+                $skipReport = true;
+        } else {
+                $skipReport = false;
+                $arep = array();
+                $arep['procedure_order_id'] = $in_orderid;
+                $arep['procedure_order_seq'] = $pcrow['procedure_order_seq'];
+                $arep['date_collected'] = rhl7DateTime($a[7]);
+                $arep['date_report'] = empty($a[22]) ? rhl7DateTime($in_rptdate) : substr(rhl7DateTime($a[22]), 0, 10);
+                $arep['report_status'] = $in_report_status;
+                $arep['report_notes'] = '';
+            }
+       
+    } else if ($a[0] == 'NTE' && $context == 'OBR') {
+            $arep['report_notes'] .= rhl7Text($a[3]) . "\n";
       }
-      $ares = array();
-      $ares['procedure_report_id'] = $procedure_report_id;
-      // OBX-5 can be a very long string of text with "~" as line separators.
-      // The first line of comments is reserved for such things.
-      if (strlen($a[5]) > 200) {
-        $ares['result_data_type'] = 'L';
-        $ares['result'] = '';
-        $ares['comments'] = rhl7Text($a[5]) . $commentdelim;
-      }
-      else {
-        $ares['result_data_type'] = substr($a[2], 0, 1); // N, S or F
-        $ares['result'] = rhl7Text($a[5]);
-        $ares['comments'] = $commentdelim;
-      }
-      $tmp = explode($d2, $a[3]);
-      $ares['result_code'] = rhl7Text($tmp[0]);
-      $ares['result_text'] = rhl7Text($tmp[1]);
-      $ares['date'] = rhl7DateTime($a[14]);
-      $ares['facility'] = rhl7Text($a[15]);
-      $ares['units'] = rhl7Text($a[6]);
-      $ares['range'] = rhl7Text($a[7]);
-      $ares['abnormal'] = rhl7Abnormal($a[8]); // values are lab dependent
-      $ares['result_status'] = rhl7ReportStatus($a[11]);
-    }
 
-    else if ($a[0] == 'NTE' && $context == 'OBX') {
-      $ares['comments'] .= rhl7Text($a[3]) . $commentdelim;
+    else if (($a[0] == 'OBX') && !$skipReport) {
+            rhl7FlushResult($ares);
+            $context = $a[0];
+            if (!$procedure_report_id) {
+                $procedure_report_id = rhl7FlushReport($arep);
+            }
+            $ares = array();
+            $ares['procedure_report_id'] = $procedure_report_id;
+            // OBX-5 can be a very long string of text with "~" as line separators.
+            // The first line of comments is reserved for such things.
+            if (strlen($a[5]) > 200) {
+                $ares['result_data_type'] = 'L';
+                $ares['result'] = '';
+                $ares['comments'] = rhl7Text($a[5]) . $commentdelim;
+            } else {
+                $ares['result_data_type'] = substr($a[2], 0, 1); // N, S or F
+                $ares['result'] = rhl7Text($a[5]);
+                $ares['comments'] = $commentdelim;
+            }
+            $tmp = explode($d2, $a[3]);
+            $ares['result_code'] = rhl7Text($tmp[0]);
+            $ares['result_text'] = rhl7Text($tmp[1]);
+            $ares['date'] = rhl7DateTime($a[14]);
+            $ares['facility'] = rhl7Text($a[15]);
+            $ares['units'] = rhl7Text($a[6]);
+            $ares['range'] = rhl7Text($a[7]);
+            $ares['abnormal'] = rhl7Abnormal($a[8]); // values are lab dependent
+            $ares['result_status'] = rhl7ReportStatus($a[11]);
+        } 
+    else if ($a[0] == 'NTE' && $context == 'OBX' && !$skipReport) {
+          $ares['comments'] .= rhl7Text($a[3]) . $commentdelim;
     }
 
     // Add code here for any other segment types that may be present.
