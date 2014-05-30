@@ -246,6 +246,7 @@ else {
 <head>
 <?php if (function_exists('html_header_show')) html_header_show(); ?>
 <link rel=stylesheet href="<?php echo $css_header;?>" type="text/css">
+        
 <title><?php xl('Collections Report','e')?></title>
 <style type="text/css">
 
@@ -270,8 +271,19 @@ else {
         display: none;
     }
 }
+#report_results table thead {
+    cursor: pointer;
+}
 
 </style>
+<script type="text/javascript" src="../../library/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="../../library/js/jquery.tablesorter.min.js"></script>
+ <script type="text/javascript" id="js">
+        $(document).ready(function() { 
+            $("#results").tablesorter(); 
+        } 
+    ); 
+ </script>
 
 <script language="JavaScript">
 
@@ -283,6 +295,31 @@ function checkAll(checked) {
    f.elements[i].checked = checked;
  }
 }
+
+function setDivContent(id, content) {
+    $("#"+id).html(content);
+}
+
+ // Called when clicking on a billing note.
+function editNote(feid) {
+/*  top.restoreSession(); */ // this is probably not needed
+   var c = $("#"+feid).attr('data-'+feid) + "\n";
+    c += "<iframe src='<?php echo "$rootdir/patient_file/history/edit_billnote.php?feid="; ?>" + feid +
+    "' style='width:100%;height:88pt;'></iframe>";
+  setDivContent(feid, c);
+}
+
+ // Called when the billing note editor closes.
+ function closeNote(feid, fenote) {
+    var txt = $("#"+feid).attr('data-'+feid);
+    var data = "data-" + feid + "='" + txt + "'";
+    var c = "<div id='" + feid +"' " + data + " title='" + fenote +"' class='detail name_note'>";
+        c += txt;
+        c += "</div>";
+    setDivContent('note_' + feid, c);
+    $("#"+feid).click(function(evt) { evt.stopPropagation(); editNote(this.id); });
+}
+
 
 </script>
 
@@ -512,7 +549,7 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
     }
 
     $query = "SELECT f.id, f.date, f.pid, f.encounter, f.last_level_billed, " .
-      "f.last_level_closed, f.last_stmt_date, f.stmt_count, f.invoice_refno, " .
+      "f.last_level_closed, f.last_stmt_date, f.stmt_count, f.invoice_refno, f.billing_note, " .
       "p.fname, p.mname, p.lname, p.street, p.city, p.state, " .
       "p.postal_code, p.phone_home, p.ss, p.genericname2, p.genericval2, " .
       "p.pubpid, p.DOB, CONCAT(u.lname, ', ', u.fname) AS referrer, " .
@@ -604,6 +641,7 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
       $row['billnote']  = ($erow['genericname2'] == 'Billing') ? $erow['genericval2'] : '';
       $row['referrer']  = $erow['referrer'];
       $row['irnumber']  = $erow['invoice_refno'];
+      $row['billing_note'] = $erow['billing_note'];
 
       // Also get the primary insurance company name whenever there is one.
       $row['ins1'] = '';
@@ -922,7 +960,7 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
 ?>
 
 <div id="report_results">
-<table>
+<table id='results' class='tablesorter'>
 
  <thead>
 <?php if ($is_due_ins) { ?>
@@ -1041,7 +1079,8 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
       $ptrow['agedbal'][$agecolno] += $balance;
     }
 
-    if (!$is_ins_summary && !$_POST['form_export'] && !$_POST['form_csvexport']) {
+    if (!$is_ins_summary && !$_POST['form_export'] && !$_POST['form_csvexport'] &&
+            $balance > 0) {
       $in_collections = stristr($row['billnote'], 'IN COLLECTIONS') !== false;
 ?>
  <tr bgcolor='<?php echo $bgcolor ?>'>
@@ -1050,7 +1089,15 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
         if ($is_due_ins) {
           echo "  <td class='detail'>&nbsp;$insname</td>\n";
         }
-        echo "  <td class='detail'>&nbsp;$ptname</td>\n";
+        $note = nl2br(htmlspecialchars( $row['billing_note'], ENT_NOQUOTES));
+        $feid = $row['id'];
+        echo "  <td>";
+        echo "<div id='note_$feid' >";
+        echo "<div class='detail name_note' id='$feid'" . " data-$feid='$ptname' title='$note'>";
+        echo "&nbsp;$ptname";
+        echo "</div>";
+        echo "</div>";
+        echo "</td>";
         if ($form_cb_ssn) {
           echo "  <td class='detail'>&nbsp;" . $row['ss'] . "</td>\n";
         }
@@ -1264,10 +1311,12 @@ if (!$_POST['form_csvexport']) {
 <script type="text/javascript" src="../../library/dynarch_calendar.js"></script>
 <?php include_once("{$GLOBALS['srcdir']}/dynarch_calendar_en.inc.php"); ?>
 <script type="text/javascript" src="../../library/dynarch_calendar_setup.js"></script>
-<script type="text/javascript" src="../../library/js/jquery.1.3.2.js"></script>
+<!-- <script type="text/javascript" src="../../library/js/jquery.1.3.2.js"></script> -->
 <script language="Javascript">
  Calendar.setup({inputField:"form_date", ifFormat:"%Y-%m-%d", button:"img_from_date"});
  Calendar.setup({inputField:"form_to_date", ifFormat:"%Y-%m-%d", button:"img_to_date"});
+ 
+ $(".name_note").click(function(evt) { evt.stopPropagation(); editNote(this.id); });
 </script>
 </html>
 <?php
