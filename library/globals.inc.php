@@ -1425,6 +1425,67 @@ $GLOBALS_METADATA = array(
   //
   'Connectors' => array(
 
+    'lab_quest_enable' => array(
+      xl('Enable Quest Diagnostics'),
+      'bool',                           // data type
+      '0',
+      xl('Enable OpenEMR Quest Diagnostic Service.')
+    ),
+
+    'lab_quest_psc' => array(
+      xl('Enable Clinic Specimen Draws'),
+      'bool',                           // data type
+      '0',
+      xl('Enable Support for Clinic Specimen Draws (non-PSC HOLD).')
+    ),
+
+  	'lab_quest_status' => array(
+      xl('Quest Lab Interface'),
+      array(
+        'T' => xl('Training'),
+        'P' => xl('Production'),
+        'D' => xl('Development'),
+      ),
+      '0',                              // default
+      xl('Interface Control for OpenEMR Quest Diagnostic Service.')
+    ),
+
+  	'lab_quest_hubname' => array(
+  		xl('Quest Lab Hub Name'),
+  		'text',                           // data type
+  		'SLHUB',
+  		xl('Hub Name for OpenEMR Quest Diagnostic Service.')
+  	),
+  		
+  		'lab_quest_facilityid' => array(
+  		xl('Quest Lab Facility ID'),
+  		'text',                           // data type
+  		'STL',
+  		xl('Facility ID for OpenEMR Quest Diagnostic Service.')
+  	),
+  		
+  	'lab_quest_catid' => array(
+      xl('Quest Document Category ID'),
+      'text',                           // data type
+      '',
+      xl('Document Category ID for OpenEMR Quest Diagnostic Service.')
+    ),
+
+  	'lab_quest_username' => array(
+      xl('Quest Service Username'),
+      'text',                           // data type
+      '',
+      xl('Username for OpenEMR Quest Diagnostic Service.')
+    ),
+
+  	'lab_quest_password' => array(
+      xl('Quest Service Password'),
+      'text',                           // data type
+      '',
+      xl('Password for OpenEMR Quest Diagnostic Service.')
+    ),
+
+ 		
     'lab_exchange_enable' => array(
       xl('Enable Lab Exchange'),
       'bool',                           // data type
