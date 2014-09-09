@@ -246,7 +246,6 @@ else {
 <head>
 <?php if (function_exists('html_header_show')) html_header_show(); ?>
 <link rel=stylesheet href="<?php echo $css_header;?>" type="text/css">
-        
 <title><?php xl('Collections Report','e')?></title>
 <style type="text/css">
 
@@ -271,19 +270,8 @@ else {
         display: none;
     }
 }
-#report_results table thead {
-    cursor: pointer;
-}
 
 </style>
-<script type="text/javascript" src="../../library/js/jquery-1.7.2.min.js"></script>
-<script type="text/javascript" src="../../library/js/jquery.tablesorter.min.js"></script>
- <script type="text/javascript" id="js">
-        $(document).ready(function() { 
-            $("#results").tablesorter(); 
-        } 
-    ); 
- </script>
 
 <script language="JavaScript">
 
@@ -960,7 +948,7 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
 ?>
 
 <div id="report_results">
-<table id='results' class='tablesorter'>
+<table>
 
  <thead>
 <?php if ($is_due_ins) { ?>
@@ -1042,6 +1030,8 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
   $orow = -1;
 
   foreach ($rows as $key => $row) {
+    $balance = $row['charges'] + $row['adjustments'] - $row['paid'];
+    if ($balance <= 0) continue;
     list($insname, $ptname, $trash) = explode('|', $key);
     list($pid, $encounter) = explode(".", $row['invnumber']);
 
@@ -1061,15 +1051,14 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
       foreach ($row as $key => $value) $ptrow[$key] = $value;
       $ptrow['agedbal'] = array();
     } else {
-      $ptrow['amount']      += $row['amount'];
-      $ptrow['paid']        += $row['paid'];
-      $ptrow['charges']     += $row['charges'];
-      $ptrow['adjustments'] += $row['adjustments'];
-      ++$ptrow['count'];
-    }
+          $ptrow['amount'] += $row['amount'];
+          $ptrow['paid'] += $row['paid'];
+          $ptrow['charges'] += $row['charges'];
+          $ptrow['adjustments'] += $row['adjustments'];
+          ++$ptrow['count'];
+        }
 
     // Compute invoice balance and aging column number, and accumulate aging.
-    $balance = $row['charges'] + $row['adjustments'] - $row['paid'];
     if ($form_age_cols) {
       $agedate = $is_ageby_lad ? $row['ladate'] : $row['dos'];
       $agetime = mktime(0, 0, 0, substr($agedate, 5, 2),
@@ -1079,8 +1068,8 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
       $ptrow['agedbal'][$agecolno] += $balance;
     }
 
-    if (!$is_ins_summary && !$_POST['form_export'] && !$_POST['form_csvexport'] &&
-            $balance > 0) {
+    if (!$is_ins_summary && !$_POST['form_export'] && !$_POST['form_csvexport'] // && $balance > 0
+            ) {
       $in_collections = stristr($row['billnote'], 'IN COLLECTIONS') !== false;
 ?>
  <tr bgcolor='<?php echo $bgcolor ?>'>
@@ -1311,7 +1300,7 @@ if (!$_POST['form_csvexport']) {
 <script type="text/javascript" src="../../library/dynarch_calendar.js"></script>
 <?php include_once("{$GLOBALS['srcdir']}/dynarch_calendar_en.inc.php"); ?>
 <script type="text/javascript" src="../../library/dynarch_calendar_setup.js"></script>
-<!-- <script type="text/javascript" src="../../library/js/jquery.1.3.2.js"></script> -->
+<script type="text/javascript" src="../../library/js/jquery.1.3.2.js"></script>
 <script language="Javascript">
  Calendar.setup({inputField:"form_date", ifFormat:"%Y-%m-%d", button:"img_from_date"});
  Calendar.setup({inputField:"form_to_date", ifFormat:"%Y-%m-%d", button:"img_to_date"});
