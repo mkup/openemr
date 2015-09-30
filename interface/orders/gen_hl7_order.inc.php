@@ -351,11 +351,11 @@ function gen_hl7_order($orderid, &$out) {
       foreach ($relcodes as $codestring) {
         if ($codestring === '') continue;
         list($codetype, $code) = explode(':', $codestring);
-        if ($codetype !== 'ICD9') continue;
+   //     if ($codetype !== 'ICD9') continue;
         $desc = lookup_code_descriptions($codestring);
         $out .= "DG1" .
           $d1 . ++$setid2 .                         // Set ID
-          $d1 . hl7Text("I9") .                     // Diagnosis Coding Method
+          $d1 .			                    // Diagnosis Coding Method
           $d1 . $code .                             // Diagnosis Code
           $d1 . hl7Text($desc) .                    // Diagnosis Description
           $d0;
