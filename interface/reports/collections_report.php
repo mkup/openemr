@@ -81,8 +81,8 @@ if ($form_age_cols > 0 && $form_age_cols < 50) {
   $form_age_inc  = 0;
 }
 
-$initial_colspan = 1;
-if ($is_due_ins      ) ++$initial_colspan;
+$initial_colspan = 0;
+// if ($is_due_ins      ) ++$initial_colspan;
 if ($form_cb_ssn     ) ++$initial_colspan;
 if ($form_cb_dob     ) ++$initial_colspan;
 if ($form_cb_pubpid  ) ++$initial_colspan;
@@ -1074,20 +1074,25 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
 ?>
  <tr bgcolor='<?php echo $bgcolor ?>'>
 <?php
-      if ($ptrow['count'] == 1) {
-        if ($is_due_ins) {
+      if (($ptrow['count'] == 1) && ($is_due_ins)) {
           echo "  <td class='detail'>&nbsp;$insname</td>\n";
-        }
-        $note = nl2br(htmlspecialchars( $row['billing_note'], ENT_NOQUOTES));
-        $feid = $row['id'];
-        echo "  <td>";
-        echo "<div id='note_$feid' >";
-        echo "<div class='detail name_note' id='$feid'" . " data-$feid='$ptname' title='$note'>";
-        echo "&nbsp;$ptname";
-        echo "</div>";
-        echo "</div>";
-        echo "</td>";
-        if ($form_cb_ssn) {
+      } else {
+        echo "  <td class='detail' colspan='1'>";
+        echo "&nbsp;</td>\n";
+      }
+
+      $note = nl2br(htmlspecialchars( $row['billing_note'], ENT_QUOTES));
+      $feid = $row['id'];
+      echo "  <td>";
+      echo "<div id='note_$feid' >";
+      echo "<div class='detail name_note' id='$feid'" . " data-$feid='$ptname' title='$note'>";
+      echo "&nbsp;$ptname";
+      echo "</div>";
+      echo "</div>";
+      echo "</td>";
+      
+      if ($ptrow['count'] == 1) {
+      if ($form_cb_ssn) {
           echo "  <td class='detail'>&nbsp;" . $row['ss'] . "</td>\n";
         }
         if ($form_cb_dob) {
@@ -1112,7 +1117,7 @@ if ($_POST['form_refresh'] || $_POST['form_export'] || $_POST['form_csvexport'])
           echo "  <td class='detail'>&nbsp;" . $row['referrer'] . "</td>\n";
         }
       } else {
-        echo "  <td class='detail' colspan='$initial_colspan'>";
+        echo "  <td class='detail' colspan='$initial_colspan - 2'>";
         echo "&nbsp;</td>\n";
       }
 ?>
