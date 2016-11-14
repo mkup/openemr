@@ -141,7 +141,7 @@ function create_statement($stmt) {
  
  $label_addressee = xl('ADDRESSEE');
  $label_remitto = xl('REMIT TO');
- $label_chartnum = xl('Chart Number');
+ $label_chartnum = xl('Inv#');
  $label_ptPhone = xl('Ph.');
  $label_insinfo = xl('Insurance information on file');
  $label_totaldue = xl('Total amount due');
@@ -166,7 +166,7 @@ function create_statement($stmt) {
  // reformatted to handle i8n by tony
 
 $out  = sprintf("%-30s %-23s %-s\n",$clinic_name,$stmt['patient'],$stmt['today']);
-$out .= sprintf("%-30s %s: %-s  %s: %s\n",$clinic_addr,$label_chartnum,$stmt['pid'],$label_ptPhone,$patient_phone['phone_home']);
+$out .= sprintf("%-30s %s: %-s  %s: %s\n",$clinic_addr,$label_chartnum,$stmt['pid'].'.'.$stmt['encounter'],$label_ptPhone,$patient_phone['phone_home']);
 $out .= sprintf("%-30s %-s\n",$clinic_csz,$label_insinfo);
 $out .= sprintf("%-30s %s: %-s\n",null,$label_totaldue);
 $out .= "\n\n";
